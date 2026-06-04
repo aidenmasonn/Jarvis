@@ -227,12 +227,11 @@ def main():
             vault_ctx = None
             if is_vault_reference(text):
                 vault_ctx = search_vault(text)
+                term = extract_search_term(text)
                 if vault_ctx:
-                    term = extract_search_term(text)
                     print(f"[Vault: fetched context for '{term}']")
                     session["vault_refs"].append(term)
                 else:
-                    term = extract_search_term(text)
                     print(f"[Vault: no note found for '{term}']")
 
             reply = chat(session, text, vault_ctx)
