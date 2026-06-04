@@ -74,16 +74,22 @@ def search_vault(text: str) -> str | None:
             if f.stem.lower() == matched_stem:
                 return f.read_text()
 
-    # Stage 2: full-text grep fallback (exact phrase, then all-words)
+    # Stage 2: full-text grep fallback (exact phrase takes priority over all-words)
     term_lower = term.lower()
     words = [w for w in term_lower.split() if len(w) > 2]
+    exact_hits = []
+    allwords_hits = []
     for f in md_files:
-        content = f.read_text()
+        content = f.read_text(errors="ignore")
         content_lower = content.lower()
         if term_lower in content_lower:
-            return content
-        if words and all(w in content_lower for w in words):
-            return content
+            exact_hits.append(content)
+        elif words and all(w in content_lower for w in words):
+            allwords_hits.append(content)
+    if exact_hits:
+        return exact_hits[0]
+    if allwords_hits:
+        return allwords_hits[0]
 
     return None
 
