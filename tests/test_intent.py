@@ -1,9 +1,10 @@
 import os
 import sys
 import unittest.mock
+from pathlib import Path
 os.environ.setdefault("ANTHROPIC_API_KEY", "test-key")
 sys.modules['keyboard'] = unittest.mock.MagicMock()
-sys.path.insert(0, "/Users/aidenmason/Desktop/Jarvis")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import jarvis
 from jarvis import is_vault_reference, is_save_intent, extract_search_term
