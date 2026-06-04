@@ -42,6 +42,8 @@ _whisper_model = None
 
 def load_whisper():
     global _whisper_model
+    if _whisper_model is not None:
+        return
     print("Loading Whisper model (first run may take a moment)...")
     _whisper_model = whisper.load_model("base")
     print("Whisper ready.")
@@ -58,6 +60,8 @@ def record_audio() -> Path:
             data, _ = stream.read(1024)
             frames.append(data.copy())
     print(" Done.")
+    if not frames:
+        raise RuntimeError("No audio recorded — hold SPACE longer")
     audio = np.concatenate(frames, axis=0)
     tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     wav_write(tmp.name, SAMPLE_RATE, audio)
@@ -65,6 +69,8 @@ def record_audio() -> Path:
 
 
 def transcribe(wav_path: Path) -> str:
+    if _whisper_model is None:
+        raise RuntimeError("Whisper model not loaded — call load_whisper() first")
     result = _whisper_model.transcribe(str(wav_path))
     wav_path.unlink(missing_ok=True)
     return result["text"].strip()
