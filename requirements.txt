@@ -2,6 +2,6 @@ anthropic
 openai-whisper
 sounddevice
 scipy
-keyboard
+pynput
 python-dotenv
 numpy

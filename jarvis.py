@@ -6,8 +6,9 @@ import tempfile
 import datetime
 from pathlib import Path
 
+import threading
 import anthropic
-import keyboard
+from pynput import keyboard as pynput_keyboard
 import sounddevice as sd
 import whisper
 import numpy as np
@@ -51,14 +52,29 @@ def load_whisper():
 
 def record_audio() -> Path:
     print("\nHold SPACE to speak...", end="", flush=True)
-    while not keyboard.is_pressed("space"):
-        pass
-    print(" Recording...", end="", flush=True)
-    frames = []
-    with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, dtype="int16") as stream:
-        while keyboard.is_pressed("space"):
-            data, _ = stream.read(1024)
-            frames.append(data.copy())
+
+    space = pynput_keyboard.Key.space
+    pressed = threading.Event()
+    released = threading.Event()
+
+    def on_press(key):
+        if key == space:
+            pressed.set()
+
+    def on_release(key):
+        if key == space:
+            released.set()
+            return False  # stop listener
+
+    with pynput_keyboard.Listener(on_press=on_press, on_release=on_release):
+        pressed.wait()
+        print(" Recording...", end="", flush=True)
+        frames = []
+        with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, dtype="int16") as stream:
+            while not released.is_set():
+                data, _ = stream.read(1024)
+                frames.append(data.copy())
+
     print(" Done.")
     if not frames:
         raise RuntimeError("No audio recorded — hold SPACE longer")

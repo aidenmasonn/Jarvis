@@ -4,7 +4,8 @@ import datetime
 import unittest.mock
 from pathlib import Path
 os.environ.setdefault("ANTHROPIC_API_KEY", "test-key")
-sys.modules['keyboard'] = unittest.mock.MagicMock()
+sys.modules['pynput'] = unittest.mock.MagicMock()
+sys.modules['pynput.keyboard'] = unittest.mock.MagicMock()
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from unittest.mock import patch, MagicMock
