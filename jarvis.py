@@ -59,6 +59,35 @@ def extract_search_term(text: str) -> str:
     return text
 
 
+def search_vault(text: str) -> str | None:
+    term = extract_search_term(text)
+    md_files = list(VAULT_PATH.glob("*.md"))
+    if not md_files:
+        return None
+
+    # Stage 1: fuzzy filename match
+    stems = [f.stem for f in md_files]
+    matches = difflib.get_close_matches(term.lower(), [s.lower() for s in stems], n=1, cutoff=0.3)
+    if matches:
+        matched_stem = matches[0]
+        for f in md_files:
+            if f.stem.lower() == matched_stem:
+                return f.read_text()
+
+    # Stage 2: full-text grep fallback (exact phrase, then all-words)
+    term_lower = term.lower()
+    words = [w for w in term_lower.split() if len(w) > 2]
+    for f in md_files:
+        content = f.read_text()
+        content_lower = content.lower()
+        if term_lower in content_lower:
+            return content
+        if words and all(w in content_lower for w in words):
+            return content
+
+    return None
+
+
 # ── CLAUDE ─────────────────────────────────────────────────────────────────
 
 
