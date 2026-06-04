@@ -1,0 +1,6 @@
+anthropic
+openai-whisper
+sounddevice
+scipy
+keyboard
+python-dotenv
