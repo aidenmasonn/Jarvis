@@ -97,11 +97,11 @@ def search_vault(text: str) -> str | None:
 def save_to_vault(summary: str) -> Path:
     title_match = re.search(r"^title:\s*(.+)$", summary, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else "untitled"
-    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") or "untitled"
     today = datetime.date.today().isoformat()
     filename = f"{today}-{slug}.md"
     path = VAULT_PATH / filename
-    path.write_text(summary)
+    path.write_text(summary, encoding="utf-8")
     return path
 
 
