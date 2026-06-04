@@ -203,7 +203,44 @@ def summarize(session: dict) -> str:
 # ── SESSION LOOP ───────────────────────────────────────────────────────────
 
 def main():
-    pass
+    load_whisper()
+    session = {
+        "messages": [],
+        "started_at": datetime.datetime.now(),
+        "vault_refs": [],
+    }
+    print("\nJarvis ready. Hold SPACE to speak. Ctrl+C to quit.\n")
+    try:
+        while True:
+            wav_path = record_audio()
+            text = transcribe(wav_path)
+            print(f"You: {text}")
+
+            if is_save_intent(text):
+                print("Jarvis: Generating summary...")
+                summary = summarize(session)
+                saved_path = save_to_vault(summary)
+                print(f"Jarvis: Saved to {saved_path.name}")
+                speak("Saved to your vault.")
+                continue
+
+            vault_ctx = None
+            if is_vault_reference(text):
+                vault_ctx = search_vault(text)
+                if vault_ctx:
+                    term = extract_search_term(text)
+                    print(f"[Vault: fetched context for '{term}']")
+                    session["vault_refs"].append(term)
+                else:
+                    term = extract_search_term(text)
+                    print(f"[Vault: no note found for '{term}']")
+
+            reply = chat(session, text, vault_ctx)
+            print(f"Jarvis: {reply}")
+            speak(reply)
+
+    except KeyboardInterrupt:
+        print("\nGoodbye.")
 
 
 if __name__ == "__main__":
