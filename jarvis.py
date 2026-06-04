@@ -46,6 +46,9 @@ client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 # ── SESSION LOOP ───────────────────────────────────────────────────────────
 
+def main():
+    pass
+
 
 if __name__ == "__main__":
     main()
