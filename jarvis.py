@@ -40,6 +40,24 @@ client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 # ── VAULT ──────────────────────────────────────────────────────────────────
 
+def is_vault_reference(text: str) -> bool:
+    t = text.lower()
+    return any(p in t for p in TRIGGER_PHRASES)
+
+
+def is_save_intent(text: str) -> bool:
+    t = text.lower()
+    return any(p in t for p in SAVE_PHRASES)
+
+
+def extract_search_term(text: str) -> str:
+    t = text.lower()
+    for phrase in TRIGGER_PHRASES:
+        idx = t.find(phrase)
+        if idx != -1:
+            return text[idx + len(phrase):].strip()
+    return text
+
 
 # ── CLAUDE ─────────────────────────────────────────────────────────────────
 
