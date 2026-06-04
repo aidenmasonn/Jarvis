@@ -107,6 +107,56 @@ def save_to_vault(summary: str) -> Path:
 
 # ── CLAUDE ─────────────────────────────────────────────────────────────────
 
+def chat(session: dict, user_text: str, vault_context: str | None = None) -> str:
+    content = user_text
+    if vault_context:
+        content = f"[Vault context]\n{vault_context}\n\n{user_text}"
+    session["messages"].append({"role": "user", "content": content})
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,  # intentionally low for voice — bump to 2048 if answers get cut off
+        system=SYSTEM_PROMPT,
+        messages=session["messages"],
+    )
+    reply = response.content[0].text
+    session["messages"].append({"role": "assistant", "content": reply})
+    return reply
+
+
+SUMMARIZE_PROMPT = """Please summarize our conversation as a structured Obsidian note. Return ONLY the markdown content, nothing else. Use this exact format:
+
+---
+title: [concise title for this conversation]
+date: {date}
+tags: [comma-separated relevant tags]
+related: [any [[wikilinks]] to related topics mentioned, or empty list]
+status: in-progress
+---
+
+## Key Decisions
+- [bullet points]
+
+## Open Questions
+- [bullet points]
+
+## Learnings
+- [bullet points]
+
+## Next Steps
+- [bullet points]
+""".format(date=datetime.date.today().isoformat())
+
+
+def summarize(session: dict) -> str:
+    messages = session["messages"] + [{"role": "user", "content": SUMMARIZE_PROMPT}]
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=2048,
+        system=SYSTEM_PROMPT,
+        messages=messages,
+    )
+    return response.content[0].text
+
 
 # ── SESSION LOOP ───────────────────────────────────────────────────────────
 
